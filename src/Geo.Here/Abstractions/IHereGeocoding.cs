@@ -5,6 +5,8 @@
 
 namespace Geo.Here.Abstractions
 {
+    using System.IO;
+    using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
     using Geo.Here.Models.Exceptions;
@@ -69,5 +71,31 @@ namespace Geo.Here.Abstractions
         /// <returns>A <see cref="LookupResponse"/> with the response from HERE.</returns>
         /// <exception cref="HereException">Thrown for multiple different reasons. Check the inner exception for more information.</exception>
         Task<LookupResponse> LookupAsync(LookupParameters parameters, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Calls the HERE Batch geocoding API and an inital status for the Job.
+        /// </summary>
+        /// <param name="parameters">A <see cref="BatchGeocodeParameters"/> with the parameters of the request.</param>
+        /// <param name="content">A <see cref="StringContent"/> represents the body content of the request.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the request.</param>
+        /// <returns>A <see cref="JobResponse"/> with the response from HERE.</returns>
+        /// <exception cref="HereException">Thrown for multiple different reasons. Check the inner exception for more information.</exception>
+        Task<JobResponse> BatchGeocodingAsync(BatchGeocodeParameters parameters, StringContent content = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Calls the HERE Batch geocoding API and gets the Job Status of a previously submitted Job.
+        /// </summary>
+        /// <param name="parameters">A <see cref="JobParameters"/> with the parameters of the request. </param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the request.</param>
+        /// <returns>A <see cref="JobResponse"/> with the response from HERE.</returns>
+        Task<JobResponse> JobStatusAync(JobParameters parameters, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Calls the HERE Batch geocoding API and gets the completed Job as a Zip file of a previously submitted Job.
+        /// </summary>
+        /// <param name="parameters">A <see cref="JobParameters"/> with the parameters of the request. </param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the request.</param>
+        /// <returns>A <see cref="JobResponse"/> with the response from HERE.</returns>
+        Task<Stream> JobCompletedAync(JobParameters parameters, CancellationToken cancellationToken = default);
     }
 }

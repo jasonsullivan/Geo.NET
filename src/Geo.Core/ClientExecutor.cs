@@ -6,14 +6,19 @@
 namespace Geo.Core
 {
     using System;
+    using System.IO;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Xml;
+
     using Geo.Core.Models;
     using Geo.Core.Models.Exceptions;
+
     using Microsoft.Extensions.Localization;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
+
     using Newtonsoft.Json;
 
     /// <summary>
@@ -52,10 +57,11 @@ namespace Geo.Core
         /// <typeparam name="TException">The exception type to return in case of any failure.</typeparam>
         /// <param name="uri">The <see cref="Uri"/> to call.</param>
         /// <param name="apiName">The name of the API being called for exception logging purposes.</param>
+        /// <param name="content"><see cref="StringContent"/> used to post content.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> used for cancelling the request.</param>
         /// <returns>A <typeparamref name="TResult"/>.</returns>
         /// <exception>An exception of type <typeparamref name="TException"/> thrown when any exception occurs and wraps the original exception.</exception>
-        public async Task<TResult> CallAsync<TResult, TException>(Uri uri, string apiName, CancellationToken cancellationToken = default)
+        public async Task<TResult> CallAsync<TResult, TException>(Uri uri, string apiName, StringContent content = null, CancellationToken cancellationToken = default)
             where TResult : class
             where TException : GeoCoreException
         {
@@ -68,7 +74,7 @@ namespace Geo.Core
 
             try
             {
-                response = await CallAsync<TResult>(uri, cancellationToken).ConfigureAwait(false);
+                response = await CallAsync<TResult>(uri, content, cancellationToken).ConfigureAwait(false);
             }
             catch (ArgumentNullException ex)
             {
@@ -119,6 +125,7 @@ namespace Geo.Core
         /// </summary>
         /// <typeparam name="TResult">The return type to parse the response into.</typeparam>
         /// <param name="uri">The <see cref="Uri"/> to call.</param>
+        /// <param name="content">The <see cref="StringContent"/> used to post content.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> used for cancelling the request.</param>
         /// <returns>A named <see cref="Tuple{T1, T2}"/> with the Result <typeparamref name="TResult"/> if successful or the JSON string if unsuccessful.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the request uri is null.</exception>
@@ -130,10 +137,18 @@ namespace Geo.Core
         /// <exception cref="TaskCanceledException">Thrown when the request is cancelled.</exception>
         /// <exception cref="JsonReaderException">Thrown when an error occurs while reading the return JSON text.</exception>
         /// <exception cref="JsonSerializationException">Thrown when when an error occurs during JSON deserialization.</exception>
-        internal async Task<CallResult<TResult>> CallAsync<TResult>(Uri uri, CancellationToken cancellationToken = default)
+        internal async Task<CallResult<TResult>> CallAsync<TResult>(Uri uri, StringContent content = null, CancellationToken cancellationToken = default)
             where TResult : class
         {
-            var response = await _client.GetAsync(uri, cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage response;
+            if (content != null)
+            {
+                response = await _client.PostAsync(uri, content, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                response = await _client.GetAsync(uri, cancellationToken).ConfigureAwait(false);
+            }
 
 #if NET5_0_OR_GREATER
             var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -144,6 +159,22 @@ namespace Geo.Core
             if (!response.IsSuccessStatusCode)
             {
                 return new CallResult<TResult>(response.StatusCode, json);
+            }
+
+            if (response.Content.Headers.ContentType.MediaType == "application/octet-stream")
+            {
+                Stream fileStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                return new CallResult<TResult>(fileStream as TResult, response.StatusCode, json);
+            }
+
+            if (response.Content.Headers.ContentType.MediaType == "application/xml")
+            {
+                json = json
+                    .Replace("<ns2:SearchBatch xmlns:ns2=\"http://www.navteq.com/lbsp/Search-Batch/1\">", "<SearchBatch>", StringComparison.InvariantCulture)
+                    .Replace("</ns2:SearchBatch>", "</SearchBatch>", StringComparison.InvariantCulture);
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(json);
+                json = JsonConvert.SerializeXmlNode(doc);
             }
 
             return new CallResult<TResult>(JsonConvert.DeserializeObject<TResult>(json), response.StatusCode, json);

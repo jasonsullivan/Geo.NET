@@ -68,7 +68,7 @@ namespace Geo.MapBox.Services
         {
             var uri = ValidateAndBuildUri<GeocodingParameters>(parameters, BuildGeocodingRequest);
 
-            return await CallAsync<Response<List<string>>, MapBoxException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<Response<List<string>>, MapBoxException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -78,7 +78,7 @@ namespace Geo.MapBox.Services
         {
             var uri = ValidateAndBuildUri<ReverseGeocodingParameters>(parameters, BuildReverseGeocodingRequest);
 
-            return await CallAsync<Response<Coordinate>, MapBoxException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<Response<Coordinate>, MapBoxException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

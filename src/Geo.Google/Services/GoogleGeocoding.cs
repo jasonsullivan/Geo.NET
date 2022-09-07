@@ -71,7 +71,7 @@ namespace Geo.Google.Services
         {
             var uri = ValidateAndBuildUri<GeocodingParameters>(parameters, BuildGeocodingRequest);
 
-            return await CallAsync<GeocodingResponse, GoogleException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<GeocodingResponse, GoogleException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -81,7 +81,7 @@ namespace Geo.Google.Services
         {
             var uri = ValidateAndBuildUri<ReverseGeocodingParameters>(parameters, BuildReverseGeocodingRequest);
 
-            return await CallAsync<GeocodingResponse, GoogleException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<GeocodingResponse, GoogleException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -91,7 +91,7 @@ namespace Geo.Google.Services
         {
             var uri = ValidateAndBuildUri<FindPlacesParameters>(parameters, BuildFindPlaceRequest);
 
-            return await CallAsync<FindPlaceResponse, GoogleException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<FindPlaceResponse, GoogleException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -101,7 +101,7 @@ namespace Geo.Google.Services
         {
             var uri = ValidateAndBuildUri<NearbySearchParameters>(parameters, BuildNearbySearchRequest);
 
-            return await CallAsync<PlaceResponse, GoogleException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<PlaceResponse, GoogleException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -111,7 +111,7 @@ namespace Geo.Google.Services
         {
             var uri = ValidateAndBuildUri<TextSearchParameters>(parameters, BuildTextSearchRequest);
 
-            return await CallAsync<PlaceResponse, GoogleException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<PlaceResponse, GoogleException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -121,7 +121,7 @@ namespace Geo.Google.Services
         {
             var uri = ValidateAndBuildUri<DetailsParameters>(parameters, BuildDetailsRequest);
 
-            return await CallAsync<DetailsResponse, GoogleException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<DetailsResponse, GoogleException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -131,7 +131,7 @@ namespace Geo.Google.Services
         {
             var uri = ValidateAndBuildUri<PlacesAutocompleteParameters>(parameters, BuildPlaceAutocompleteRequest);
 
-            return await CallAsync<AutocompleteResponse<PlaceAutocomplete>, GoogleException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<AutocompleteResponse<PlaceAutocomplete>, GoogleException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -141,7 +141,7 @@ namespace Geo.Google.Services
         {
             var uri = ValidateAndBuildUri<QueryAutocompleteParameters>(parameters, BuildQueryAutocompleteRequest);
 
-            return await CallAsync<AutocompleteResponse<QueryAutocomplete>, GoogleException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<AutocompleteResponse<QueryAutocomplete>, GoogleException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

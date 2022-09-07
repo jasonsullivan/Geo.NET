@@ -69,7 +69,7 @@ namespace Geo.ArcGIS.Services
         {
             var uri = await ValidateAndBuildUri<AddressCandidateParameters>(parameters, BuildAddressCandidateRequest, cancellationToken).ConfigureAwait(false);
 
-            return await CallAsync<CandidateResponse, ArcGISException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<CandidateResponse, ArcGISException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -79,7 +79,7 @@ namespace Geo.ArcGIS.Services
         {
             var uri = await ValidateAndBuildUri<PlaceCandidateParameters>(parameters, BuildPlaceCandidateRequest, cancellationToken).ConfigureAwait(false);
 
-            return await CallAsync<CandidateResponse, ArcGISException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<CandidateResponse, ArcGISException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -89,7 +89,7 @@ namespace Geo.ArcGIS.Services
         {
             var uri = await ValidateAndBuildUri<SuggestParameters>(parameters, BuildSuggestRequest, cancellationToken).ConfigureAwait(false);
 
-            return await CallAsync<SuggestResponse, ArcGISException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<SuggestResponse, ArcGISException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -99,7 +99,7 @@ namespace Geo.ArcGIS.Services
         {
             var uri = await ValidateAndBuildUri<ReverseGeocodingParameters>(parameters, BuildReverseGeocodingRequest, cancellationToken).ConfigureAwait(false);
 
-            return await CallAsync<ReverseGeocodingResponse, ArcGISException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<ReverseGeocodingResponse, ArcGISException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -109,7 +109,7 @@ namespace Geo.ArcGIS.Services
         {
             var uri = await ValidateAndBuildUri<GeocodingParameters>(parameters, BuildGeocodingRequest, cancellationToken).ConfigureAwait(false);
 
-            return await CallAsync<GeocodingResponse, ArcGISException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<GeocodingResponse, ArcGISException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

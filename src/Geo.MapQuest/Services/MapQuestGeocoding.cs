@@ -68,7 +68,7 @@ namespace Geo.MapQuest.Services
         {
             var uri = ValidateAndBuildUri<GeocodingParameters>(parameters, BuildGeocodingRequest);
 
-            return await CallAsync<Response<GeocodeResult>, MapQuestException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<Response<GeocodeResult>, MapQuestException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -78,7 +78,7 @@ namespace Geo.MapQuest.Services
         {
             var uri = ValidateAndBuildUri<ReverseGeocodingParameters>(parameters, BuildReverseGeocodingRequest);
 
-            return await CallAsync<Response<ReverseGeocodeResult>, MapQuestException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<Response<ReverseGeocodeResult>, MapQuestException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

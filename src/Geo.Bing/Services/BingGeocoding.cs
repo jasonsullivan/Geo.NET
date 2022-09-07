@@ -61,7 +61,7 @@ namespace Geo.Bing.Services
         {
             var uri = ValidateAndBuildUri<GeocodingParameters>(parameters, BuildGeocodingRequest);
 
-            return await CallAsync<Response, BingException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<Response, BingException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -71,7 +71,7 @@ namespace Geo.Bing.Services
         {
             var uri = ValidateAndBuildUri<ReverseGeocodingParameters>(parameters, BuildReverseGeocodingRequest);
 
-            return await CallAsync<Response, BingException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<Response, BingException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -79,7 +79,7 @@ namespace Geo.Bing.Services
         {
             var uri = ValidateAndBuildUri<AddressGeocodingParameters>(parameters, BuildAddressGeocodingRequest);
 
-            return await CallAsync<Response, BingException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<Response, BingException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

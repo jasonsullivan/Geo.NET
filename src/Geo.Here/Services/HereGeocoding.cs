@@ -7,15 +7,19 @@ namespace Geo.Here.Services
 {
     using System;
     using System.Globalization;
+    using System.IO;
     using System.Linq;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Web;
+
     using Geo.Core;
     using Geo.Here.Abstractions;
     using Geo.Here.Models.Exceptions;
     using Geo.Here.Models.Parameters;
     using Geo.Here.Models.Responses;
+
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Localization;
     using Microsoft.Extensions.Logging;
@@ -27,6 +31,9 @@ namespace Geo.Here.Services
     public class HereGeocoding : ClientExecutor, IHereGeocoding
     {
         private const string ApiName = "Here";
+        private const string BatchJobUri = "https://batch.geocoder.ls.hereapi.com/6.2/jobs";
+        private const string JobStatusUri = "https://batch.geocoder.ls.hereapi.com/6.2/jobs/ResponseID";
+        private const string JobCompletedUri = "https://batch.geocoder.ls.hereapi.com/6.2/jobs/ResponseID/result";
         private const string GeocodeUri = "https://geocode.search.hereapi.com/v1/geocode";
         private const string ReverseGeocodeUri = "https://revgeocode.search.hereapi.com/v1/revgeocode";
         private const string DiscoverUri = "https://discover.search.hereapi.com/v1/discover";
@@ -66,7 +73,7 @@ namespace Geo.Here.Services
         {
             var uri = ValidateAndBuildUri<GeocodeParameters>(parameters, BuildGeocodingRequest);
 
-            return await CallAsync<GeocodingResponse, HereException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<GeocodingResponse, HereException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -76,7 +83,7 @@ namespace Geo.Here.Services
         {
             var uri = ValidateAndBuildUri<ReverseGeocodeParameters>(parameters, BuildReverseGeocodingRequest);
 
-            return await CallAsync<ReverseGeocodingResponse, HereException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<ReverseGeocodingResponse, HereException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -86,7 +93,7 @@ namespace Geo.Here.Services
         {
             var uri = ValidateAndBuildUri<DiscoverParameters>(parameters, BuildDiscoverRequest);
 
-            return await CallAsync<DiscoverResponse, HereException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<DiscoverResponse, HereException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -96,7 +103,7 @@ namespace Geo.Here.Services
         {
             var uri = ValidateAndBuildUri<AutosuggestParameters>(parameters, BuildAutosuggestRequest);
 
-            return await CallAsync<AutosuggestResponse, HereException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<AutosuggestResponse, HereException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -106,7 +113,7 @@ namespace Geo.Here.Services
         {
             var uri = ValidateAndBuildUri<LookupParameters>(parameters, BuildLookupRequest);
 
-            return await CallAsync<LookupResponse, HereException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<LookupResponse, HereException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -116,7 +123,28 @@ namespace Geo.Here.Services
         {
             var uri = ValidateAndBuildUri<BrowseParameters>(parameters, BuildBrowseRequest);
 
-            return await CallAsync<BrowseResponse, HereException>(uri, ApiName, cancellationToken).ConfigureAwait(false);
+            return await CallAsync<BrowseResponse, HereException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task<JobResponse> BatchGeocodingAsync(BatchGeocodeParameters parameters, StringContent content = null, CancellationToken cancellationToken = default)
+        {
+            var uri = ValidateAndBuildUri<BatchGeocodeParameters>(parameters, BuildBatchGeocodingRequest);
+            return await CallAsync<JobResponse, HereException>(uri: uri, apiName: ApiName, content: content, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task<JobResponse> JobStatusAync(JobParameters parameters, CancellationToken cancellationToken = default)
+        {
+            var uri = ValidateAndBuildUri<JobParameters>(parameters, BuildJobStatusRequest);
+            return await CallAsync<JobResponse, HereException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task<Stream> JobCompletedAync(JobParameters parameters, CancellationToken cancellationToken = default)
+        {
+            var uri = ValidateAndBuildUri<JobParameters>(parameters, BuildJobCompletedRequest);
+            return await CallAsync<Stream, HereException>(uri: uri, apiName: ApiName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -508,6 +536,103 @@ namespace Geo.Here.Services
         internal void AddHereKey(ref QueryString query)
         {
             query = query.Add("apiKey", _keyContainer.GetKey());
+        }
+
+        /// <summary>
+        /// Builds the Job uri based on passed parameters.
+        /// </summary>
+        /// <param name="parameters"><see cref="JobParameters"/>Job Parameters.</param>
+        /// <returns>A <see cref="Uri"/> with the completed HERE Job uri.</returns>
+        internal Uri BuildJobStatusRequest(JobParameters parameters)
+        {
+            var uriBuilder = new UriBuilder(JobStatusUri.Replace("ResponseID", parameters.ResponseId, StringComparison.InvariantCulture));
+            var query = QueryString.Empty;
+            AddBaseParameters(parameters, ref query);
+            query.Add("action", parameters.Action.ToString().ToLower(parameters.Language));
+            AddHereKey(ref query);
+            uriBuilder.Query = query.ToString();
+            return uriBuilder.Uri;
+        }
+
+        /// <summary>
+        /// Builds the Job Completed uri based on the passed parameters.
+        /// </summary>
+        /// <param name="parameters"><see cref="BatchGeocodeParameters"/> with the job parameters for the batch process.</param>
+        /// <returns>A <see cref="Uri"/> with the completed HERE Job uri.</returns>
+        internal Uri BuildJobCompletedRequest(JobParameters parameters)
+        {
+            var uriBuilder = new UriBuilder(JobCompletedUri.Replace("ResponseID", parameters.ResponseId, StringComparison.InvariantCulture));
+            var query = QueryString.Empty;
+            AddBaseParameters(parameters, ref query);
+            AddHereKey(ref query);
+            uriBuilder.Query = query.ToString();
+            return uriBuilder.Uri;
+        }
+
+        /// <summary>
+        /// Builds the Batch Geocoding uri based on the passed parameters.
+        /// </summary>
+        /// <param name="parameters"><see cref="BatchGeocodeParameters"/> with the job parameters for the batch process.</param>
+        /// <returns>A <see cref="Uri"/> with the completed HERE Job uri.</returns>
+        internal Uri BuildBatchGeocodingRequest(BatchGeocodeParameters parameters)
+        {
+            var uriBuilder = new UriBuilder(BatchJobUri);
+            var query = QueryString.Empty;
+
+            AddBaseParameters(parameters, ref query);
+
+            if (parameters.Generation > 0)
+            {
+                query.Add("gen", parameters.Generation.ToString(CultureInfo.InvariantCulture));
+            }
+            else
+            {
+                _logger.HereError(_localizer["Invalid Generation Value"]);
+            }
+
+            query.Add("action", parameters.Action.ToString().ToLower(parameters.Language));
+
+            if (!string.IsNullOrEmpty(parameters.MailTo))
+            {
+                query.Add("mailto", parameters.MailTo);
+            }
+
+            query.Add("header", parameters.Header.ToString());
+
+            if (string.IsNullOrEmpty(parameters.InputDelimiter))
+            {
+                var error = _localizer["Input delimiter not provided"];
+                _logger.HereError(error);
+                throw new ArgumentException(error, nameof(parameters));
+            }
+            else
+            {
+                query.Add("indelim", parameters.InputDelimiter);
+            }
+
+            if (string.IsNullOrEmpty(parameters.OutputDelimiter))
+            {
+                var error = _localizer["Output delimiter not provided"];
+                _logger.HereError(error);
+                throw new ArgumentException(error, nameof(parameters));
+            }
+            else
+            {
+                query.Add("outdelim", parameters.OutputDelimiter);
+            }
+
+            if (parameters.OutputColumns.Count > 0)
+            {
+                query.Add("outcols", string.Join(",", parameters.OutputColumns.Select(x => x)));
+            }
+
+            query.Add("outputCombined", parameters.OutputCombined.ToString());
+
+            AddHereKey(ref query);
+
+            uriBuilder.Query = query.ToString();
+
+            return uriBuilder.Uri;
         }
     }
 }
